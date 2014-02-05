@@ -5,7 +5,7 @@ import imaplib
 import email
 
 
-class SuperEmail(object):
+class Mailbox(object):
     """ Class for parsing email messages.
 
         Args:
@@ -39,40 +39,39 @@ class SuperEmail(object):
         ids_list = data[0].split()
         return ids_list[start:end]
 
-    def get_message_date(self, email_id):
-        """ Get email message date
-
-            Args:
-            email_id - ID of email.
-
-            Return email date in STRING.
-        """
-        email_message = self.__get_message(email_id)
-        date = self.__get_data("date", email_message)
-        return date
-
-    def get_message_content(self, email_id):
-        """ Get email message content
-
-            Args:
-            email_id - ID of email.
-
-            Return email content in STRING.
-        """
-        email_message = self.__get_message(email_id)
-        content = self.__get_data("content", email_message)
-        return content
-
-    def __get_data(self, data, email_message):
-        for part in email_message.walk():
-            part_content_type = part.get_content_type()
-            if part_content_type == "multipart/related" and data == "date":
-                return part["date"]
-            elif part_content_type == 'text/plain' and data == "content":
-                return part.get_payload()
-
-    def __get_message(self, email_id):
+    def get_message(self, email_id):
         result, data = self.mailbox.fetch(email_id, "(RFC822)")  # fetch the email body (RFC822) for the given ID
         raw_email = data[0][1]  # body, which is raw text of the email including headers and alternate payloads
         email_message = email.message_from_string(raw_email)
-        return email_message
+        return Email(email_message)
+
+
+class Email(object):
+    """ Wrapper for email.message.Message """
+
+    def __init__(self, body):
+        self.body = body
+
+    @property
+    def date(self):
+        """ Get email message date """
+        return self.body.get("date")
+
+    @property
+    def subject(self):
+        """ Get email message date """
+        return self.body.get("Subject")
+
+    @property
+    def content(self):
+        """ Get email message content """
+        for part in self.body.walk():
+            if part.get_content_type() == 'text/plain':
+                return part.get_payload()
+
+    @property
+    def raw_body(self):
+        return self.body
+
+    def __str__(self):
+        return "<Email Object: {}>".format(self.subject)
