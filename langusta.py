@@ -49,8 +49,7 @@ class Mailbox(object):
     def get_message(self, email_id):
         result, data = self.mailbox.fetch(email_id, "(RFC822)")  # fetch the email body (RFC822) for the given ID
         raw_email = data[0][1]  # body, which is raw text of the email including headers and alternate payloads
-        email_message = email.message_from_string(raw_email)
-        return Email(email_message)
+        return Email(raw_email)
 
 
 class Email(object):
