@@ -13,7 +13,7 @@ content_types = ContentTypes("text/html", "text/plain")
 
 
 class Mailbox(object):
-    """ Class for parsing email messages.
+    """ Class for handling mailbox.
 
         Args:
         server - IMAP email host
@@ -33,7 +33,7 @@ class Mailbox(object):
         """  Return list of "folders" aka labels in GMAIL """
         return self.mailbox.list()
 
-    def get_message_list(self, start=None, end=None, criterion='ALL'):
+    def get_message_list(self, criterion='ALL'):
         """ Get list of messages
 
             Args:
@@ -44,7 +44,7 @@ class Mailbox(object):
          """
         result, data = self.mailbox.search(None, criterion)  # '(SUBJECT "Invitation to fill out an Equivalency Determination questionnaire")'
         ids_list = data[0].split()
-        return ids_list[start:end]
+        return ids_list
 
     def get_message(self, email_id):
         result, data = self.mailbox.fetch(email_id, "(RFC822)")  # fetch the email body (RFC822) for the given ID

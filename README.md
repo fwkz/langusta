@@ -8,6 +8,9 @@ Getting started
 Retrieve latest email from GMail mailbox.
 
 ```python
+import langusta
+
+
 SECRET_PASSWORD = "!@#$%^"
 SECRET_LOGIN = "your_login"
 
