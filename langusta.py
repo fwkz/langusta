@@ -9,7 +9,7 @@ from collections import namedtuple
 
 
 ContentTypes = namedtuple("ContentTypes", ["HTML", "PLAINTEXT"])
-content_types = ContentTypes("text/html", "text/plain")
+CONTENT_TYPES = ContentTypes("text/html", "text/plain")
 
 
 class Mailbox(object):
@@ -43,13 +43,11 @@ class Mailbox(object):
             Returns list of email IDs.
          """
         result, data = self.mailbox.search(None, criterion)  # '(SUBJECT "Invitation to fill out an Equivalency Determination questionnaire")'
-        ids_list = data[0].split()
-        return ids_list
+        return data[0].split()
 
     def get_message(self, email_id):
         result, data = self.mailbox.fetch(email_id, "(RFC822)")  # fetch the email body (RFC822) for the given ID
-        raw_email = data[0][1]  # body, which is raw text of the email including headers and alternate payloads
-        return Email(raw_email)
+        return Email(data[0][1])
 
 
 class Email(object):
@@ -62,24 +60,20 @@ class Email(object):
         """ Get email message DATE """
         payload = self.body.get("date")
         date_tuple = email.utils.parsedate_tz(payload)
-        time_tz = datetime.datetime.fromtimestamp(email.utils.mktime_tz(date_tuple))
-        return time_tz
+        return datetime.datetime.fromtimestamp(email.utils.mktime_tz(date_tuple))
 
     def subject(self):
         """ Get email message SUBJECT """
         feed = self.body.get("Subject")
-        decoded_subject = email.Header.decode_header(feed).pop()[0]
-        return decoded_subject
+        return email.Header.decode_header(feed).pop()[0]
 
-    def content(self, content_type=content_types.HTML):
+    def content(self, content_type=CONTENT_TYPES.HTML):
         """ Get email message CONTENT """
-        content = None
-
         for part in self.body.walk():
             if part.get_content_type() == content_type:
-                content = self.__decode_content(part)
+                return self.__decode_content(part)
         else:
-            return content or False
+            return None
 
     @staticmethod
     def __decode_content(part):
@@ -107,7 +101,6 @@ class Email(object):
     @staticmethod
     def __parse_address(raw_address):
         parsed_addr = email.utils.parseaddr(raw_address)
-
         EmailAddress = namedtuple("EmailAddress", "label, address, raw")
         label = email.Header.decode_header(parsed_addr[0]).pop()[0]  # Decode label
         return EmailAddress(label, parsed_addr[1], raw_address)
