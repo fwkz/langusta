@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='langusta',
     version='0.1',
-    packages=['langusta.py'],
+    packages=[''],
     url='https://github.com/fwkz/langusta',
     license='MIT',
     author='fwkz',
